@@ -1,12 +1,12 @@
 import { getAll, put, remove, clearAll, exportBackup, importBackup } from './db.js?v=13';
 import { SPECIES, MONTHS, recordsForPeriod, statsFor, monthlyCounts } from './data.js?v=13';
-import { ArtikutzaMap, parseGpx } from './map.js?v=16';
+import { ArtikutzaMap, parseGpx } from './map.js?v=17';
 
 const $ = selector => document.querySelector(selector);
 const svg = id => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${id}"/></svg>`;
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const state = { screen: 'map', records: [], routes: [], baseRoutes: [], maps: [], period: 'season', guideFilter: 'all', photo: null, photoUrl: null };
-const map = new ArtikutzaMap($('#map-viewport'),$('#map-tiles'),$('#map-overlay'),$('#map-markers'),$('.map-attribution'),$('#map-scale'));
+const map = new ArtikutzaMap($('#map-viewport'),$('#map-tiles'),$('#map-overlay'),$('#map-markers'),$('.map-attribution'));
 let toastTimer;
 
 function toast(message) {
@@ -96,7 +96,6 @@ async function refresh() {
   [state.records,state.routes,state.maps] = await Promise.all([getAll('records'),getAll('routes'),getAll('offlineMaps')]);
   state.records.sort((a,b) => new Date(b.createdAt)-new Date(a.createdAt));
   map.setData(state.records,[...state.baseRoutes,...state.routes]);
-  $('#map-empty').hidden = state.records.some(r => Number.isFinite(r.latitude) && Number.isFinite(r.longitude));
   renderStats(); renderCalendar();
   const activeMapId = localStorage.getItem('armycotza-offline-map');
   map.setOfflineMap(state.maps.find(item => item.id === activeMapId) || null);
@@ -276,6 +275,6 @@ async function init() {
   try { state.baseRoutes = await fetch('./assets/official-routes.json').then(response => response.json()); } catch(error) { state.baseRoutes = []; }
   try {await refresh();} catch(error) {toast('El almacenamiento local no está disponible en este navegador.');}
   refreshWeather();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=16').catch(()=>{});
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=17').catch(()=>{});
 }
 init();

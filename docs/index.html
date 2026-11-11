@@ -11,7 +11,7 @@
   <link rel="manifest" href="./manifest.webmanifest?v=15">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon-shield-180.png">
   <link rel="icon" type="image/png" href="./assets/icon-shield-192.png">
-  <link rel="stylesheet" href="./style.css?v=14">
+  <link rel="stylesheet" href="./style.css?v=16">
   <title>ARMYCOTZA · Artikutza</title>
 </head>
 <body>
@@ -52,8 +52,7 @@
           <svg class="map-overlay" id="map-overlay" aria-hidden="true"></svg>
           <div class="map-markers" id="map-markers"></div>
           <div class="map-shade"></div>
-          <div class="map-place">Artikutza</div>
-          <div class="map-scale">500 m</div>
+          <div class="map-scale" id="map-scale" aria-label="Escala del mapa">—</div>
           <div class="map-attribution"><a href="https://opentopomap.org/about" target="_blank" rel="noopener">© OpenTopoMap</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>, SRTM · CC BY-SA</div>
           <div class="map-control-stack top"><button type="button" id="layers-btn" aria-label="Capas y rutas"><svg><use href="#i-layers"/></svg></button></div>
           <div class="map-control-stack bottom"><button type="button" id="locate-btn" aria-label="Mi ubicación"><svg><use href="#i-locate"/></svg></button><button type="button" id="map-settings-btn" aria-label="Mapas sin conexión"><svg><use href="#i-map"/></svg></button><button type="button" id="zoom-in" aria-label="Acercar"><svg><use href="#i-plus"/></svg></button><button type="button" id="zoom-out" aria-label="Alejar"><svg><use href="#i-minus"/></svg></button></div>
@@ -63,7 +62,7 @@
       <section class="screen screen-form" id="screen-registro" aria-labelledby="record-heading" hidden>
         <h1 class="sr-only" id="record-heading">Nuevo hallazgo</h1>
         <form id="record-form">
-          <div class="photo-panel" id="photo-panel"><img id="photo-preview" src="./assets/hallazgo-referencia.png" alt="Ejemplo visual de una seta"><span id="photo-example">Imagen de referencia</span><div class="photo-actions"><label class="photo-hotspot" aria-label="Hacer foto"><svg><use href="#i-camera"/></svg><input type="file" id="photo-input" accept="image/*" capture="environment" hidden></label><label class="photo-hotspot" aria-label="Elegir foto"><svg><use href="#i-camera"/></svg><input type="file" id="gallery-input" accept="image/*" hidden></label></div></div>
+          <div class="photo-panel" id="photo-panel"><img id="photo-preview" alt="" hidden><div class="photo-placeholder" id="photo-placeholder"><svg><use href="#i-mushroom"/></svg><span>Selecciona una especie o añade tu foto</span></div><a id="photo-example" class="photo-example" target="_blank" rel="noopener" hidden></a><div class="photo-actions"><label class="photo-hotspot" aria-label="Hacer foto" title="Hacer foto"><svg><use href="#i-camera"/></svg><input type="file" id="photo-input" accept="image/*" capture="environment" hidden></label><label class="photo-hotspot" aria-label="Elegir foto" title="Elegir foto"><svg><use href="#i-import"/></svg><input type="file" id="gallery-input" accept="image/*" hidden></label></div></div>
           <label class="field-label" for="species">Especie</label>
           <div class="select-wrap"><svg><use href="#i-mushroom"/></svg><select id="species" required></select><svg class="select-chevron"><use href="#i-down"/></svg></div>
           <div class="quantity-line"><label class="field-label" for="quantity">Cantidad</label><div class="stepper"><button type="button" id="qty-minus" aria-label="Restar uno">−</button><input id="quantity" type="number" min="1" max="999" value="1" inputmode="numeric" required><button type="button" id="qty-plus" aria-label="Sumar uno">+</button></div></div>
@@ -101,6 +100,6 @@
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </main>
   </div>
-  <script type="module" src="./js/app.js?v=15"></script>
+  <script type="module" src="./js/app.js?v=16"></script>
 </body>
 </html>

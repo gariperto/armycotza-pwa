@@ -254,6 +254,6 @@ async function init() {
   try { state.baseRoutes = await fetch('./assets/official-routes.json').then(response => response.json()); } catch(error) { state.baseRoutes = []; }
   try {await refresh();} catch(error) {toast('El almacenamiento local no está disponible en este navegador.');}
   refreshWeather();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=14').catch(()=>{});
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=15').catch(()=>{});
 }
 init();

@@ -30,3 +30,10 @@
   .stat-grid article{background:#19391e}
   .guide-card .species-placeholder,.species-sheet-placeholder,.photo-placeholder{background:#15371e}
 }
+
+@media (max-width:540px){
+  :root,html,body,.desktop-stage,.app,.app-header,.bottom-nav{
+    background-color:#052817;
+    background-image:none;
+  }
+}

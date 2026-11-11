@@ -11,7 +11,15 @@
   <link rel="manifest" href="./manifest.webmanifest?v=15">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/icon-shield-180.png">
   <link rel="icon" type="image/png" href="./assets/icon-shield-192.png">
-  <link rel="stylesheet" href="./style.css?v=18">
+  <link rel="stylesheet" href="./style.css?v=20">
+  <style>
+    @media (max-width: 540px) {
+      html, body, .desktop-stage, .app, .app-header, .bottom-nav {
+        background-color: #052817 !important;
+        background-image: none !important;
+      }
+    }
+  </style>
   <title>ARMYCOTZA · Artikutza</title>
 </head>
 <body>
@@ -98,6 +106,6 @@
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </main>
   </div>
-  <script type="module" src="./js/app.js?v=19"></script>
+  <script type="module" src="./js/app.js?v=20"></script>
 </body>
 </html>

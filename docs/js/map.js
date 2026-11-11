@@ -27,12 +27,13 @@ function buttonMarker(record, x, y) {
 }
 
 export class ArtikutzaMap {
-  constructor(viewport, tiles, overlay, markers, attribution) {
+  constructor(viewport, tiles, overlay, markers, attribution, scale) {
     this.viewport = viewport;
     this.tiles = tiles;
     this.overlay = overlay;
     this.markers = markers;
     this.attribution = attribution;
+    this.scale = scale;
     this.center = { ...INITIAL_CENTER };
     this.zoom = 13;
     this.records = [];
@@ -90,6 +91,13 @@ export class ArtikutzaMap {
     const height = this.viewport.clientHeight;
     if (!width || !height) return;
     const center = project(this.center.lat, this.center.lon, this.zoom);
+    const metersPerPixel = Math.cos(this.center.lat * Math.PI / 180) * 2 * Math.PI * 6378137 / (TILE_SIZE * 2 ** this.zoom);
+    const targetMeters = metersPerPixel * Math.min(105, width * .28);
+    const power = 10 ** Math.floor(Math.log10(targetMeters));
+    const unit = targetMeters / power;
+    const distance = (unit >= 5 ? 5 : unit >= 2 ? 2 : 1) * power;
+    this.scale.textContent = distance >= 1000 ? `${distance / 1000} km` : `${distance} m`;
+    this.scale.style.width = `${Math.round(distance / metersPerPixel)}px`;
     const left = center.x - width / 2;
     const top = center.y - height / 2;
     this.tiles.replaceChildren();

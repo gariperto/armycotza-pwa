@@ -1,12 +1,12 @@
 import { getAll, put, remove, clearAll, exportBackup, importBackup } from './db.js?v=13';
 import { SPECIES, MONTHS, recordsForPeriod, statsFor, monthlyCounts } from './data.js?v=13';
-import { ArtikutzaMap, parseGpx } from './map.js?v=13';
+import { ArtikutzaMap, parseGpx } from './map.js?v=16';
 
 const $ = selector => document.querySelector(selector);
 const svg = id => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-${id}"/></svg>`;
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const state = { screen: 'map', records: [], routes: [], baseRoutes: [], maps: [], period: 'season', guideFilter: 'all', photo: null, photoUrl: null };
-const map = new ArtikutzaMap($('#map-viewport'),$('#map-tiles'),$('#map-overlay'),$('#map-markers'),$('.map-attribution'));
+const map = new ArtikutzaMap($('#map-viewport'),$('#map-tiles'),$('#map-overlay'),$('#map-markers'),$('.map-attribution'),$('#map-scale'));
 let toastTimer;
 
 function toast(message) {
@@ -102,8 +102,31 @@ async function refresh() {
   map.setOfflineMap(state.maps.find(item => item.id === activeMapId) || null);
 }
 
+function updatePhotoPreview() {
+  const species = SPECIES.find(item => item.name === $('#species').value);
+  const image = $('#photo-preview');
+  const label = $('#photo-example');
+  const isOwnPhoto = Boolean(state.photoUrl);
+  const source = isOwnPhoto ? state.photoUrl : species?.image;
+  image.hidden = !source;
+  $('#photo-placeholder').hidden = Boolean(source);
+  $('#photo-panel').classList.toggle('has-photo', isOwnPhoto);
+  if (source) {
+    image.src = source;
+    image.alt = isOwnPhoto ? 'Foto de tu hallazgo' : `Imagen de referencia de ${species.name}`;
+  } else image.removeAttribute('src');
+  label.hidden = isOwnPhoto || !species?.image;
+  if (!label.hidden) {
+    label.textContent = species.photo ? `Foto: ${species.photo.author} · ${species.photo.license}` : `Imagen ilustrativa · ${species.name}`;
+    if (species.photo?.source) label.href = species.photo.source;
+    else label.removeAttribute('href');
+  }
+}
+
 function setupForm() {
   $('#species').innerHTML = '<option value="">Seleccionar especie</option><option value="Sin identificar">Sin identificar</option>' + SPECIES.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+  $('#species').addEventListener('change', updatePhotoPreview);
+  updatePhotoPreview();
   $('#qty-minus').addEventListener('click',() => $('#quantity').value = Math.max(1, Number($('#quantity').value||1)-1));
   $('#qty-plus').addEventListener('click',() => $('#quantity').value = Math.min(999, Number($('#quantity').value||1)+1));
   const acceptPhoto = event => {
@@ -112,9 +135,7 @@ function setupForm() {
     state.photo = file;
     if (state.photoUrl) URL.revokeObjectURL(state.photoUrl);
     state.photoUrl = URL.createObjectURL(file);
-    $('#photo-preview').src = state.photoUrl;
-    $('#photo-example').hidden = true;
-    $('#photo-panel').classList.add('has-photo');
+    updatePhotoPreview();
   };
   $('#photo-input').addEventListener('change',acceptPhoto);
   $('#gallery-input').addEventListener('change',acceptPhoto);
@@ -129,8 +150,9 @@ function setupForm() {
     if ((latitude === null) !== (longitude === null) || (latitude !== null && (Math.abs(latitude)>90 || Math.abs(longitude)>180))) { toast('Introduce latitud y longitud válidas.'); return; }
     try {
       await put('records',{id:crypto.randomUUID(),createdAt:new Date().toISOString(),species,quantity,condition:document.querySelector('input[name="condition"]:checked')?.value||'Óptimo',habitat:$('#habitat').value,latitude,longitude,notes:$('#notes').value.trim().slice(0,5000),photo:state.photo});
-      $('#record-form').reset(); $('#quantity').value='1'; $('#photo-preview').src='./assets/hallazgo-referencia.png'; $('#photo-example').hidden=false; $('#photo-panel').classList.remove('has-photo'); state.photo=null;
+      $('#record-form').reset(); $('#quantity').value='1'; state.photo=null;
       if (state.photoUrl) URL.revokeObjectURL(state.photoUrl); state.photoUrl=null;
+      updatePhotoPreview();
       await refresh(); showScreen('map'); toast('Hallazgo guardado solo en este dispositivo.');
     } catch(error) { toast('No se pudo guardar. Comprueba el espacio disponible.'); }
   });
@@ -153,7 +175,7 @@ function showSpecies(id) {
   const source = species.source ? `<a href="${escapeHtml(species.source)}" target="_blank" rel="noopener">Nombre científico: Catalogue of Life / GBIF</a>` : 'Imagen ilustrativa de la infografía v0.2.';
   const credit = species.photo ? `<p class="source-note">Foto: ${escapeHtml(species.photo.author)} · <a href="${escapeHtml(species.photo.source)}" target="_blank" rel="noopener">Wikimedia Commons</a> · ${species.photo.licenseUrl ? `<a href="${escapeHtml(species.photo.licenseUrl)}" target="_blank" rel="noopener">${escapeHtml(species.photo.license)}</a>` : escapeHtml(species.photo.license)}. Imagen reducida para la app.</p>` : '';
   openSheet(`<h2>${escapeHtml(species.name)}</h2>${visual}<p><strong>${escapeHtml(species.common)}</strong></p>${aliases}<p>${escapeHtml(species.note)}</p>${credit}<p class="source-note">${source} Las fotografías son ilustrativas y no bastan para identificar un ejemplar.</p><button type="button" id="record-this">Registrar esta especie</button>`);
-  $('#record-this').addEventListener('click',()=>{ closeSheet(); showScreen('registro'); $('#species').value=species.name; });
+  $('#record-this').addEventListener('click',()=>{ closeSheet(); showScreen('registro'); $('#species').value=species.name; updatePhotoPreview(); });
 }
 
 function showRecordList() {
@@ -254,6 +276,6 @@ async function init() {
   try { state.baseRoutes = await fetch('./assets/official-routes.json').then(response => response.json()); } catch(error) { state.baseRoutes = []; }
   try {await refresh();} catch(error) {toast('El almacenamiento local no está disponible en este navegador.');}
   refreshWeather();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=15').catch(()=>{});
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=16').catch(()=>{});
 }
 init();

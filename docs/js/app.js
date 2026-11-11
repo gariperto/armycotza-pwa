@@ -237,13 +237,36 @@ function showOfflinePanel() {
   });
 }
 
+function showViewportInfo() {
+  const probe = document.createElement('div');
+  probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);height:0;width:0';
+  document.body.append(probe);
+  const probeStyle = getComputedStyle(probe);
+  const safeTop = Math.round(parseFloat(probeStyle.paddingTop) || 0);
+  const safeBottom = Math.round(parseFloat(probeStyle.paddingBottom) || 0);
+  probe.remove();
+  const total = Math.round(screen.height);
+  const available = Math.round(innerHeight);
+  const appHeight = Math.round($('#app').getBoundingClientRect().height);
+  const navBottom = Math.round($('.bottom-nav').getBoundingClientRect().bottom);
+  const installed = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const reserved = Math.max(0, total - available);
+  const result = installed && reserved > 15
+    ? `iOS reserva ${reserved} px fuera del área de la página. ARMYCOTZA no puede dibujar controles en esa franja.`
+    : appHeight < available - 2 || navBottom < available - 2
+      ? 'La app no está ocupando toda el área disponible; se puede corregir en el diseño.'
+      : 'La app ocupa toda el área que el navegador le entrega.';
+  openSheet(`<h2>Comprobar pantalla · v19</h2><p><strong>${escapeHtml(result)}</strong></p><p>Pantalla del dispositivo: ${total} px<br>Área disponible para la app: ${available} px<br>Altura de ARMYCOTZA: ${appHeight} px<br>Barra inferior termina en: ${navBottom} px<br>Margen superior de seguridad: ${safeTop} px<br>Margen inferior de seguridad: ${safeBottom} px<br>Abierta desde el icono: ${installed ? 'sí' : 'no'}</p><p class="source-note">Estos datos solo se muestran en tu dispositivo. No se envían a ningún servidor.</p>`);
+}
+
 function showMenu() {
-  openSheet(`<h2>ARMYCOTZA</h2><p>Tu cuaderno micológico privado de Artikutza. Hallazgos, fotos y mapas importados se guardan en este dispositivo.</p><button type="button" id="menu-records">Mis hallazgos (${state.records.length})</button><button type="button" id="menu-maps">Capas, rutas y mapas sin conexión</button><button type="button" id="menu-export">Exportar copia privada</button><label class="action">Importar copia privada<input id="backup-file" type="file" accept=".json,application/json"></label><button type="button" id="menu-install">Cómo instalar la app</button><button type="button" id="menu-delete" class="danger">Borrar todos los datos locales</button><p class="source-note">La instalación de la PWA requiere HTTPS o localhost. Las teselas en línea proceden de OpenTopoMap y no se precargan para uso sin conexión.</p>`);
+  openSheet(`<h2>ARMYCOTZA</h2><p>Tu cuaderno micológico privado de Artikutza. Hallazgos, fotos y mapas importados se guardan en este dispositivo.</p><button type="button" id="menu-records">Mis hallazgos (${state.records.length})</button><button type="button" id="menu-maps">Capas, rutas y mapas sin conexión</button><button type="button" id="menu-export">Exportar copia privada</button><label class="action">Importar copia privada<input id="backup-file" type="file" accept=".json,application/json"></label><button type="button" id="menu-install">Cómo instalar la app</button><button type="button" id="menu-viewport">Comprobar pantalla</button><button type="button" id="menu-delete" class="danger">Borrar todos los datos locales</button><p class="source-note">La instalación de la PWA requiere HTTPS o localhost. Las teselas en línea proceden de OpenTopoMap y no se precargan para uso sin conexión.</p>`);
   $('#menu-records').addEventListener('click',showRecordList);
   $('#menu-maps').addEventListener('click',showMapPanel);
   $('#menu-export').addEventListener('click',exportData);
   $('#backup-file').addEventListener('change',e=>importData(e.target.files[0]));
   $('#menu-install').addEventListener('click',()=>openSheet('<h2>Instalar ARMYCOTZA</h2><p>En iPhone: abre esta dirección en Safari, toca Compartir y elige «Añadir a pantalla de inicio».</p><p>En escritorio: usa el icono de instalación del navegador. La app queda disponible sin red; la topografía necesita un mapa local importado.</p>'));
+  $('#menu-viewport').addEventListener('click',showViewportInfo);
   $('#menu-delete').addEventListener('click',async()=>{if(!confirm('¿Borrar todos los hallazgos, rutas y mapas guardados en este dispositivo? Exporta una copia antes si quieres conservarlos.'))return;await clearAll();localStorage.removeItem('armycotza-offline-map');localStorage.removeItem('armycotza-weather-artikutza');await refresh();closeSheet();toast('Datos locales borrados.');});
 }
 
@@ -275,6 +298,6 @@ async function init() {
   try { state.baseRoutes = await fetch('./assets/official-routes.json').then(response => response.json()); } catch(error) { state.baseRoutes = []; }
   try {await refresh();} catch(error) {toast('El almacenamiento local no está disponible en este navegador.');}
   refreshWeather();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=18').catch(()=>{});
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=19').catch(()=>{});
 }
 init();

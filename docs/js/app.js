@@ -247,7 +247,6 @@ function setupEvents() {
   $('#locate-btn').addEventListener('click',getGps);
   $('#map-markers').addEventListener('click',e=>{const button=e.target.closest('.map-marker');if(button)showRecord(button.dataset.id);});
   $('.sheet-close').addEventListener('click',closeSheet);
-  $('#clock').textContent=new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
 }
 
 async function init() {
@@ -255,6 +254,6 @@ async function init() {
   try { state.baseRoutes = await fetch('./assets/official-routes.json').then(response => response.json()); } catch(error) { state.baseRoutes = []; }
   try {await refresh();} catch(error) {toast('El almacenamiento local no está disponible en este navegador.');}
   refreshWeather();
-  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=13').catch(()=>{});
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js?v=14').catch(()=>{});
 }
 init();
